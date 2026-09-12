@@ -197,7 +197,7 @@ button {
 }
 
 .welcome-names h1 {
-  font: clamp(40px, 11vw, 56px)/0.95 var(--font-display);
+  font: clamp(26px, 6.5vw, 42px)/1.15 var(--font-display);
   margin: 12px 0 8px;
   color: #fff6e5;
 }
@@ -446,7 +446,7 @@ button {
 }
 
 .hero h1.names-title {
-  font: clamp(52px, 14vw, 84px)/0.92 var(--font-display);
+  font: clamp(30px, 7.5vw, 54px)/1.15 var(--font-display);
   margin: 12px 0 6px;
   color: #5c2b12;
 }
@@ -1553,7 +1553,8 @@ footer {
 }
 
 .footer-copy h2 {
-  font-size: 52px;
+  font-size: clamp(28px, 6.5vw, 46px);
+  line-height: 1.15;
   margin: 8px 0;
   color: #fff6e5;
 }

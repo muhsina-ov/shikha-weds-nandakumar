@@ -164,7 +164,7 @@ function WelcomeModal({ onDone }: { onDone: () => void }) {
 
         <div className="welcome-names">
           <small>Together with their families</small>
-          <h1>Shikha <i>&</i> Sumeet</h1>
+          <h1>Shikha Shaj <i>&</i> Sumeet Nandkumar Pillai</h1>
           <p>cordially invite you to celebrate their wedding</p>
           <div className="welcome-date-badge">
             <span>15 · 11 · 2026</span>
@@ -496,11 +496,8 @@ function App() {
           </div>
           <p className="blessing">With the divine blessings of our elders & families</p>
           <h1 className="names-title">
-            Shikha <span>&</span> Sumeet
+            Shikha Shaj <span>&</span> Sumeet Nandkumar Pillai
           </h1>
-          <p className="full-names">
-            Shikha Shaj <i>&</i> Sumeet Nandkumar Pillai
-          </p>
           <div className="date-rule">
             <i />
             <span>SUNDAY · 15 NOVEMBER 2026</span>
@@ -846,7 +843,7 @@ function App() {
           <Sparkle size={28} weight="thin" />
           <p className="blessing-footer">|| Lokah Samastah Sukhino Bhavantu ||</p>
           <p className="footer-cheer">We eagerly look forward to welcoming you</p>
-          <h2>Shikha <i>&</i> Sumeet</h2>
+          <h2>Shikha Shaj <i>&</i> Sumeet Nandkumar Pillai</h2>
           <span className="footer-date-info">
             15 & 16 November 2026 · Dombivli & Navi Mumbai
           </span>

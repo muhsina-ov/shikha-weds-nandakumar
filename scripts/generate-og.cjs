@@ -80,18 +80,16 @@ async function generateOgImage() {
         </text>
 
         <!-- Main Names -->
-        <text x="0" y="112" font-family="Georgia, serif" font-size="64" fill="#4a2412" font-weight="bold" letter-spacing="1">
-          Shikha <tspan fill="#b83850" font-style="italic" font-weight="normal">&amp;</tspan> Sumeet
+        <text x="0" y="96" font-family="Georgia, serif" font-size="44" fill="#4a2412" font-weight="bold">
+          Shikha Shaj
         </text>
-
-        <!-- Full Lineage / Names -->
-        <text x="0" y="152" font-family="Georgia, serif" font-size="16" fill="#6d462c" letter-spacing="0.5">
-          Shikha Shaj <tspan fill="#c58e30">✦</tspan> Sumeet Nandkumar Pillai
+        <text x="0" y="146" font-family="Georgia, serif" font-size="34" fill="#4a2412" font-weight="bold">
+          <tspan fill="#b83850" font-style="italic" font-weight="normal">&amp; </tspan> Sumeet Nandkumar Pillai
         </text>
 
         <!-- Gold Divider -->
-        <line x1="0" y1="184" x2="560" y2="184" stroke="url(#gold)" stroke-width="1.8" />
-        <circle cx="280" cy="184" r="5" fill="#a46d1b" />
+        <line x1="0" y1="178" x2="560" y2="178" stroke="url(#gold)" stroke-width="1.8" />
+        <circle cx="280" cy="178" r="5" fill="#a46d1b" />
 
         <!-- Events Tag -->
         <text x="0" y="222" font-family="Georgia, serif" font-size="14" letter-spacing="3" fill="#882136" font-weight="bold">
