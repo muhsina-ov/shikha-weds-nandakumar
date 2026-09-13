@@ -19,6 +19,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './styles.css';
 
+// Wedding Muhurtam: Sunday 15 November 2026 at 10:00 AM IST
+const WEDDING = new Date('2026-11-15T10:00:00+05:30');
+
 interface EventItem {
   id: string;
   name: string;
@@ -83,6 +86,42 @@ function Reveal({ children, className = '' }: { children: React.ReactNode; class
     >
       {children}
     </motion.div>
+  );
+}
+
+function Countdown() {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const diff = Math.max(0, WEDDING.getTime() - now);
+  const values = [
+    Math.floor(diff / 86400000),
+    Math.floor(diff / 3600000) % 24,
+    Math.floor(diff / 60000) % 60,
+    Math.floor(diff / 1000) % 60
+  ];
+
+  return (
+    <div className="countdown">
+      {values.map((v, i) => (
+        <div className="count-unit" key={i}>
+          <div className="flip">
+            <motion.span
+              key={v}
+              initial={{ rotateX: -75, opacity: 0 }}
+              animate={{ rotateX: 0, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {String(v).padStart(2, '0')}
+            </motion.span>
+          </div>
+          <small>{['days', 'hours', 'mins', 'secs'][i]}</small>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -673,6 +712,19 @@ function App() {
           <ArrowDown size={18} />
           <span>Scroll to celebrate</span>
         </div>
+      </section>
+
+      {/* Countdown Section */}
+      <section className="count-section">
+        <Reveal>
+          <p className="kicker">Until the sacred Muhurtam</p>
+          <h2>Counting Every Auspicious Moment</h2>
+          <Countdown />
+          <p className="muhurtam-pill">
+            <Clock size={16} weight="bold" />
+            <span>Auspicious Muhurtam: 10:00 AM – 10:30 AM</span>
+          </p>
+        </Reveal>
       </section>
 
       {/* Scratch Reveal Card */}
