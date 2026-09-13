@@ -252,51 +252,193 @@ function downloadBothEvents() {
 function ScratchDate() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [done, setDone] = useState(false);
-  const drawing = useRef(false);
-  const strokes = useRef(0);
+  const isDrawing = useRef(false);
+  const lastPoint = useRef<{ x: number; y: number } | null>(null);
+  const totalScratchedDistance = useRef(0);
+  const hasScratched = useRef(false);
+  const checkPending = useRef(false);
 
-  useEffect(() => {
-    const c = canvas.current;
-    if (!c) return;
-    const ratio = Math.min(devicePixelRatio, 2);
+  const drawSurface = (c: HTMLCanvasElement) => {
     const rect = c.getBoundingClientRect();
-    c.width = rect.width * ratio;
-    c.height = rect.height * ratio;
-    const ctx = c.getContext('2d')!;
-    ctx.scale(ratio, ratio);
+    const width = rect.width || 350;
+    const height = rect.height || 220;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
 
-    const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
-    grad.addColorStop(0, '#d7a94f');
-    grad.addColorStop(0.5, '#f5deb3');
-    grad.addColorStop(1, '#a76d1c');
+    c.width = Math.round(width * ratio);
+    c.height = Math.round(height * ratio);
+
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    // Rich metallic gold gradient
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, '#cda250');
+    grad.addColorStop(0.25, '#fae19c');
+    grad.addColorStop(0.5, '#d4a242');
+    grad.addColorStop(0.75, '#fae19c');
+    grad.addColorStop(1, '#a67223');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = '#633f1f';
+    // Delicate decorative micro-texture
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    for (let x = 0; x < width; x += 14) {
+      for (let y = 0; y < height; y += 14) {
+        if ((x + y) % 28 === 0) {
+          ctx.fillRect(x, y, 4, 4);
+        }
+      }
+    }
+
+    // Outer gold border
+    ctx.strokeStyle = 'rgba(101, 14, 29, 0.28)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, width - 20, height - 20);
+
+    // Inner dotted gold border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(15, 15, width - 30, height - 30);
+    ctx.setLineDash([]);
+
+    // Auspicious Diya icon & scratch prompt
     ctx.textAlign = 'center';
-    ctx.font = '11px Marcellus, Georgia, serif';
-    ctx.fillText('SCRATCH TO REVEAL OUR DATE', rect.width / 2, rect.height / 2 - 8);
-    ctx.font = '24px serif';
-    ctx.fillText('🪔', rect.width / 2, rect.height / 2 + 26);
-  }, []);
+    ctx.textBaseline = 'middle';
 
-  const scratch = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!drawing.current || done) return;
-    const c = canvas.current!;
-    const r = c.getBoundingClientRect();
-    const ctx = c.getContext('2d')!;
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(e.clientX - r.left, e.clientY - r.top, 24, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.font = '30px serif';
+    ctx.fillText('🪔', width / 2, height / 2 - 20);
 
-    strokes.current += 1;
-    if (strokes.current > 42) {
-      setDone(true);
-      c.style.opacity = '0';
+    ctx.fillStyle = '#542704';
+    ctx.font = '700 12px Marcellus, Georgia, serif';
+    ctx.fillText('SCRATCH TO REVEAL DATE', width / 2, height / 2 + 18);
+
+    ctx.font = '600 10.5px sans-serif';
+    ctx.fillStyle = '#7a3e0b';
+    ctx.fillText('Swipe or drag across the card', width / 2, height / 2 + 42);
+  };
+
+  const revealCard = () => {
+    if (done) return;
+    setDone(true);
+    if (canvas.current) {
+      canvas.current.style.opacity = '0';
+    }
+    try {
       navigator.vibrate?.(35);
+    } catch {}
+  };
+
+  const checkProgress = () => {
+    const c = canvas.current;
+    if (!c || done) return;
+
+    // Fast-path: significant scratching distance
+    if (totalScratchedDistance.current > 1100) {
+      revealCard();
+      return;
+    }
+
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const rect = c.getBoundingClientRect();
+    const width = rect.width || 350;
+    const height = rect.height || 220;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+    const cols = 10;
+    const rows = 6;
+    let cleared = 0;
+    const total = cols * rows;
+
+    for (let i = 1; i <= cols; i++) {
+      for (let j = 1; j <= rows; j++) {
+        const sx = Math.floor((width / (cols + 1)) * i * ratio);
+        const sy = Math.floor((height / (rows + 1)) * j * ratio);
+        const alpha = ctx.getImageData(sx, sy, 1, 1).data[3];
+        if (alpha < 128) {
+          cleared++;
+        }
+      }
+    }
+
+    if (cleared / total >= 0.38) {
+      revealCard();
     }
   };
+
+  const scratchStroke = (x: number, y: number, prev: { x: number; y: number } | null) => {
+    const c = canvas.current;
+    if (!c || done) return;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = 42;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    if (prev) {
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      const dist = Math.hypot(x - prev.x, y - prev.y);
+      totalScratchedDistance.current += dist;
+    } else {
+      ctx.arc(x, y, 21, 0, Math.PI * 2);
+      ctx.fill();
+      totalScratchedDistance.current += 20;
+    }
+
+    hasScratched.current = true;
+
+    if (!checkPending.current) {
+      checkPending.current = true;
+      requestAnimationFrame(() => {
+        checkProgress();
+        checkPending.current = false;
+      });
+    }
+  };
+
+  const getCoordinates = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const c = canvas.current;
+    if (!c) return { x: 0, y: 0 };
+    const rect = c.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  };
+
+  useEffect(() => {
+    if (done) return;
+    const c = canvas.current;
+    if (!c) return;
+
+    drawSurface(c);
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!hasScratched.current && !done && canvas.current) {
+          drawSurface(canvas.current);
+        }
+      });
+    }
+
+    const handleResize = () => {
+      if (!hasScratched.current && !done && canvas.current) {
+        drawSurface(canvas.current);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [done]);
 
   return (
     <section className={`scratch-section ${done ? 'revealed' : ''}`}>
@@ -308,7 +450,7 @@ function ScratchDate() {
       <Reveal>
         <p className="script">Save our auspicious date</p>
         <h2>A sacred day written in the stars</h2>
-        <div className="scratch-card">
+        <div className={`scratch-card ${done ? 'revealed' : ''}`}>
           <div className="date-reveal">
             <small>Sunday</small>
             <b>15</b>
@@ -318,18 +460,51 @@ function ScratchDate() {
           <canvas
             ref={canvas}
             onPointerDown={(e) => {
-              drawing.current = true;
-              e.currentTarget.setPointerCapture(e.pointerId);
-              scratch(e);
+              if (done) return;
+              isDrawing.current = true;
+              try {
+                e.currentTarget.setPointerCapture(e.pointerId);
+              } catch {}
+              const pos = getCoordinates(e);
+              lastPoint.current = pos;
+              scratchStroke(pos.x, pos.y, null);
             }}
-            onPointerMove={scratch}
-            onPointerUp={() => (drawing.current = false)}
-            onPointerCancel={() => (drawing.current = false)}
+            onPointerMove={(e) => {
+              if (!isDrawing.current || done) return;
+              const pos = getCoordinates(e);
+              scratchStroke(pos.x, pos.y, lastPoint.current);
+              lastPoint.current = pos;
+            }}
+            onPointerUp={(e) => {
+              isDrawing.current = false;
+              lastPoint.current = null;
+              try {
+                if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                  e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+              } catch {}
+            }}
+            onPointerCancel={() => {
+              isDrawing.current = false;
+              lastPoint.current = null;
+            }}
           />
         </div>
-        <p className="scratch-hint">
-          {done ? 'We cannot wait to celebrate with you ♡' : 'Use your finger or cursor to uncover the date'}
-        </p>
+        <div className="scratch-actions">
+          <p className={`scratch-hint ${done ? 'revealed-text' : ''}`}>
+            {done ? '✨ We cannot wait to celebrate with you! 🪔' : 'Use your finger or cursor to uncover the date'}
+          </p>
+          {!done && (
+            <button
+              type="button"
+              className="scratch-reveal-btn"
+              onClick={revealCard}
+              aria-label="Instant reveal wedding date"
+            >
+              <span>✨ Instant Reveal</span>
+            </button>
+          )}
+        </div>
       </Reveal>
     </section>
   );
