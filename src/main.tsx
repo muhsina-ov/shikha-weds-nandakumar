@@ -125,10 +125,11 @@ function Countdown() {
   );
 }
 
-function WelcomeModal({ onDone }: { onDone: () => void }) {
+function WelcomeModal({ onDone, onStartMusic }: { onDone: () => void; onStartMusic: () => void }) {
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
+    onStartMusic();
     setOpen(true);
     setTimeout(() => {
       onDone();
@@ -144,7 +145,7 @@ function WelcomeModal({ onDone }: { onDone: () => void }) {
       <div className="welcome-backdrop">
         <img
           src="/assets/shikha-sumeet.jpg"
-          alt="Shikha and Sumeet"
+          alt="Sumeet Nandkumar and Shikha Shaj"
           className="welcome-bg-image"
         />
         <div className="welcome-shade" />
@@ -164,7 +165,7 @@ function WelcomeModal({ onDone }: { onDone: () => void }) {
 
         <div className="welcome-names">
           <small>Together with their families</small>
-          <h1>Shikha Shaj <i>&</i> Sumeet Nandkumar Pillai</h1>
+          <h1>Sumeet Nandkumar <i>&</i> Shikha Shaj</h1>
           <p>cordially invite you to celebrate their wedding</p>
           <div className="welcome-date-badge">
             <span>15 · 11 · 2026</span>
@@ -174,7 +175,7 @@ function WelcomeModal({ onDone }: { onDone: () => void }) {
         </div>
 
         <motion.button
-          aria-label="Open Shikha and Sumeet's wedding invitation"
+          aria-label="Open Sumeet and Shikha's wedding invitation"
           className="open-invite"
           onClick={handleOpen}
           whileTap={{ scale: 0.97 }}
@@ -197,20 +198,20 @@ function downloadIcs(event: EventItem) {
   const body = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//InviteStory//Shikha & Sumeet Wedding//EN',
+    'PRODID:-//InviteStory//Sumeet & Shikha Wedding//EN',
     'BEGIN:VEVENT',
     `DTSTART:${event.calStart}`,
     `DTEND:${event.calEnd}`,
-    `SUMMARY:Shikha & Sumeet — ${event.name}`,
+    `SUMMARY:Sumeet & Shikha — ${event.name}`,
     `LOCATION:${event.venue}, ${event.address}`,
-    `DESCRIPTION:Celebrate the wedding celebrations of Shikha Shaj & Sumeet Nandkumar Pillai. Venue: ${event.venue}. Map: ${event.mapLink}`,
+    `DESCRIPTION:Celebrate the wedding celebrations of Sumeet Nandkumar & Shikha Shaj. Venue: ${event.venue}. Map: ${event.mapLink}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
 
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' }));
-  a.download = `shikha-sumeet-${event.id}.ics`;
+  a.download = `sumeet-shikha-${event.id}.ics`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -219,27 +220,27 @@ function downloadBothEvents() {
   const body = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//InviteStory//Shikha & Sumeet Wedding//EN',
+    'PRODID:-//InviteStory//Sumeet & Shikha Wedding//EN',
     'BEGIN:VEVENT',
     'DTSTART:20261115T043000Z',
     'DTEND:20261115T083000Z',
-    'SUMMARY:Wedding Ceremony (Thalikettu) — Shikha & Sumeet',
+    'SUMMARY:Wedding Ceremony (Thalikettu) — Sumeet & Shikha',
     'LOCATION:Shree Ponnu Guruvayurappan Temple, Rajaji path, 4th Cross Road Dombivli (E)-421201',
-    'DESCRIPTION:Shikha Shaj & Sumeet Nandkumar Pillai Wedding Ceremony (Thalikettu). Muhurtam: 10:00 AM - 10:30 AM. Map: https://share.google/qLP9HFFwf3d46fL59',
+    'DESCRIPTION:Sumeet Nandkumar & Shikha Shaj Wedding Ceremony (Thalikettu). Muhurtam: 10:00 AM - 10:30 AM. Map: https://share.google/qLP9HFFwf3d46fL59',
     'END:VEVENT',
     'BEGIN:VEVENT',
     'DTSTART:20261116T133000Z',
     'DTEND:20261116T173000Z',
-    'SUMMARY:Wedding Reception — Shikha & Sumeet',
+    'SUMMARY:Wedding Reception — Sumeet & Shikha',
     'LOCATION:The Atrangii House Sky Lounge, Palm Beach Road, Sector 17, Sanpada, Navi Mumbai',
-    'DESCRIPTION:Shikha & Sumeet Wedding Reception. 7:00 PM onwards. Map: https://share.google/XmfFylexUHnSbqoiA',
+    'DESCRIPTION:Sumeet & Shikha Wedding Reception. 7:00 PM onwards. Map: https://share.google/XmfFylexUHnSbqoiA',
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
 
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' }));
-  a.download = 'shikha-sumeet-wedding-events.ics';
+  a.download = 'sumeet-shikha-wedding-events.ics';
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -330,97 +331,85 @@ function ScratchDate() {
   );
 }
 
-// Auspicious Ambient Music synthesized with Web Audio API
-function AudioPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const timerRef = useRef<number | null>(null);
-
-  const startMusic = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
-      audioCtxRef.current = ctx;
-
-      // Auspicious pentatonic / traditional Kerala temple notes (Mohanam / Bhupali: C, D, E, G, A)
-      const baseFreq = 261.63; // C4
-      const scale = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2, 9 / 4];
-      const melody = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 4, 5, 4, 2, 3, 0];
-      let step = 0;
-
-      const playNextNote = () => {
-        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') return;
-        const noteIndex = melody[step % melody.length];
-        const freq = baseFreq * scale[noteIndex];
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        // Flute / Shehnai warmth harmonic
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-        // Soft envelope
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.07, ctx.currentTime + 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 1.3);
-
-        step++;
-        timerRef.current = window.setTimeout(playNextNote, 680);
-      };
-
-      playNextNote();
-      setIsPlaying(true);
-    } catch {
-      // Audio autoplay restrictions handled gracefully
-    }
-  };
-
-  const stopMusic = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {});
-      audioCtxRef.current = null;
-    }
-    setIsPlaying(false);
-  };
-
+// Auspicious South Indian Temple Music (from YouTube: https://youtu.be/57AMdDfSstg)
+function AudioPlayer({
+  isPlaying,
+  setIsPlaying,
+  audioRef
+}: {
+  isPlaying: boolean;
+  setIsPlaying: (v: boolean) => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+}) {
   const toggle = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
     if (isPlaying) {
-      stopMusic();
+      audio.pause();
+      setIsPlaying(false);
     } else {
-      startMusic();
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch((e) => {
+        console.warn('Playback blocked or failed:', e);
+      });
     }
   };
 
   return (
-    <button
-      className="music-toggle"
-      onClick={toggle}
-      title={isPlaying ? 'Mute auspicious music' : 'Play auspicious temple melody'}
-      aria-label="Toggle background wedding music"
-    >
-      {isPlaying ? <SpeakerHigh size={18} weight="bold" /> : <SpeakerSlash size={18} />}
-      <span>{isPlaying ? 'Music Playing' : 'Play Music'}</span>
-    </button>
+    <div className="music-player-container">
+      <button
+        className={`music-toggle ${isPlaying ? 'is-playing' : ''}`}
+        onClick={toggle}
+        title={isPlaying ? 'Pause auspicious temple music' : 'Play auspicious temple music'}
+        aria-label="Toggle background wedding music"
+      >
+        <span className="music-icon-wrapper">
+          {isPlaying ? <SpeakerHigh size={18} weight="fill" /> : <SpeakerSlash size={18} weight="bold" />}
+        </span>
+        <div className="music-toggle-label">
+          <span className="track-title">{isPlaying ? 'Temple Music Playing' : 'Play Temple Music'}</span>
+          <small className="track-meta">South Indian Instrumental 🪔</small>
+        </div>
+        {isPlaying && (
+          <span className="equalizer-bars" aria-hidden="true">
+            <i /><i /><i /><i />
+          </span>
+        )}
+      </button>
+
+      <a
+        href="https://youtu.be/57AMdDfSstg?si=DOF2YMetC3fYWkMa"
+        target="_blank"
+        rel="noreferrer"
+        className="music-yt-badge"
+        title="Listen to original soundtrack on YouTube: Powerful South Indian Instrumental Part 2"
+      >
+        <span>YouTube ↗</span>
+      </a>
+    </div>
   );
 }
 
 function App() {
   const [entered, setEntered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<'ceremony' | 'reception'>('ceremony');
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const leafY = useTransform(scrollYProgress, [0, 1], [0, 180]);
   const page = useRef<HTMLElement>(null);
+
+  const startMusic = () => {
+    if (audioRef.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.warn('Autoplay prevented:', err);
+      });
+    }
+  };
 
   useEffect(() => {
     if (reduce || !entered || !page.current) return;
@@ -444,7 +433,21 @@ function App() {
   return (
     <main ref={page}>
       <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
-      <AudioPlayer />
+      
+      {/* Background Wedding Temple Music (YouTube track) */}
+      <audio
+        ref={audioRef}
+        src="/assets/temple-music.m4a"
+        preload="auto"
+        loop
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+      <AudioPlayer
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        audioRef={audioRef}
+      />
 
       {/* Atmospheric Glowing Temple Lanterns */}
       <div className="lantern-atmosphere" aria-hidden="true">
@@ -479,7 +482,7 @@ function App() {
         ))}
       </div>
 
-      {!entered && <WelcomeModal onDone={() => setEntered(true)} />}
+      {!entered && <WelcomeModal onDone={() => setEntered(true)} onStartMusic={startMusic} />}
 
       {/* Hero Section */}
       <section className="hero">
@@ -496,7 +499,7 @@ function App() {
           </div>
           <p className="blessing">With the divine blessings of our elders & families</p>
           <h1 className="names-title">
-            Shikha Shaj <span>&</span> Sumeet Nandkumar Pillai
+            Sumeet Nandkumar <span>&</span> Shikha Shaj
           </h1>
           <div className="date-rule">
             <i />
@@ -514,7 +517,7 @@ function App() {
           <div className="gold-arch-border">
             <img
               src="/assets/shikha-sumeet.jpg"
-              alt="Shikha Shaj and Sumeet Nandkumar Pillai in traditional Kasavu attire"
+              alt="Sumeet Nandkumar and Shikha Shaj in traditional Kasavu attire"
               className="hero-couple-img"
             />
           </div>
@@ -559,12 +562,12 @@ function App() {
           </p>
 
           <div className="families-grid">
-            <div className="family-card bride-card">
-              <span className="family-role">Bride</span>
-              <h3>Shikha Shaj</h3>
+            <div className="family-card groom-card">
+              <span className="family-role">Groom</span>
+              <h3>Sumeet Nandkumar</h3>
               <p className="family-parents">
-                Daughter of <strong>Shaj P.V</strong> <br />
-                and <strong>Jisha Shaj</strong>
+                Son of <strong>Nandkumar Pillai</strong> <br />
+                and <strong>Sunita Pillai</strong>
               </p>
             </div>
 
@@ -573,12 +576,12 @@ function App() {
               <em>weds</em>
             </div>
 
-            <div className="family-card groom-card">
-              <span className="family-role">Groom</span>
-              <h3>Sumeet Nandkumar Pillai</h3>
+            <div className="family-card bride-card">
+              <span className="family-role">Bride</span>
+              <h3>Shikha Shaj</h3>
               <p className="family-parents">
-                Son of <strong>Nandkumar Pillai</strong> <br />
-                and <strong>Sunita Pillai</strong>
+                Daughter of <strong>Shaj Puthan Veetal</strong> <br />
+                and <strong>Jisha Shaj</strong>
               </p>
             </div>
           </div>
@@ -594,7 +597,7 @@ function App() {
           <img
             src="/assets/shikha-sumeet.jpg"
             loading="lazy"
-            alt="Shikha and Sumeet in traditional Kasavu attire"
+            alt="Sumeet Nandkumar and Shikha Shaj in traditional Kasavu attire"
           />
         </div>
         <Reveal className="ceremony-caption">
@@ -785,7 +788,7 @@ function App() {
                   <span>Call</span>
                 </a>
                 <a
-                  href="https://wa.me/917303330431?text=Hi%20Kirankumar%20ji%2C%20heartiest%20congratulations%20to%20Shikha%20and%20Sumeet!%20Looking%20forward%20to%20attending."
+                  href="https://wa.me/917303330431?text=Hi%20Kirankumar%20ji%2C%20heartiest%20congratulations%20to%20Sumeet%20and%20Shikha!%20Looking%20forward%20to%20attending."
                   target="_blank"
                   rel="noreferrer"
                   className="contact-btn wa-btn"
@@ -814,7 +817,7 @@ function App() {
                   <span>Call</span>
                 </a>
                 <a
-                  href="https://wa.me/919769913791?text=Hi%20Ritu%20ji%2C%20heartiest%20congratulations%20to%20Shikha%20and%20Sumeet!%20Looking%20forward%20to%20attending."
+                  href="https://wa.me/919769913791?text=Hi%20Ritu%20ji%2C%20heartiest%20congratulations%20to%20Sumeet%20and%20Shikha!%20Looking%20forward%20to%20attending."
                   target="_blank"
                   rel="noreferrer"
                   className="contact-btn wa-btn"
@@ -835,7 +838,7 @@ function App() {
           <img
             src="/assets/shikha-sumeet.jpg"
             loading="lazy"
-            alt="Shikha and Sumeet Wedding"
+            alt="Sumeet and Shikha Wedding"
           />
         </div>
         <div className="footer-overlay" />
@@ -843,7 +846,7 @@ function App() {
           <Sparkle size={28} weight="thin" />
           <p className="blessing-footer">|| Lokah Samastah Sukhino Bhavantu ||</p>
           <p className="footer-cheer">We eagerly look forward to welcoming you</p>
-          <h2>Shikha Shaj <i>&</i> Sumeet Nandkumar Pillai</h2>
+          <h2>Sumeet Nandkumar <i>&</i> Shikha Shaj</h2>
           <span className="footer-date-info">
             15 & 16 November 2026 · Dombivli & Navi Mumbai
           </span>
