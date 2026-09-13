@@ -165,7 +165,11 @@ function WelcomeModal({ onDone, onStartMusic }: { onDone: () => void; onStartMus
 
         <div className="welcome-names">
           <small>Together with their families</small>
-          <h1>Sumeet Nandkumar <i>&</i> Shikha Shaj</h1>
+          <h1 className="welcome-title stacked-names">
+            <span className="name-line">Sumeet Nandkumar</span>
+            <span className="amp-line"><i>&</i></span>
+            <span className="name-line">Shikha Shaj</span>
+          </h1>
           <p>cordially invite you to celebrate their wedding</p>
           <div className="welcome-date-badge">
             <span>15 · 11 · 2026</span>
@@ -498,8 +502,10 @@ function App() {
             <span>|| Shree Guruvayurappan Thunai ||</span>
           </div>
           <p className="blessing">With the divine blessings of our elders & families</p>
-          <h1 className="names-title">
-            Sumeet Nandkumar <span>&</span> Shikha Shaj
+          <h1 className="names-title stacked-names">
+            <span className="name-line">Sumeet Nandkumar</span>
+            <span className="amp-line">&</span>
+            <span className="name-line">Shikha Shaj</span>
           </h1>
           <div className="date-rule">
             <i />
@@ -846,7 +852,11 @@ function App() {
           <Sparkle size={28} weight="thin" />
           <p className="blessing-footer">|| Lokah Samastah Sukhino Bhavantu ||</p>
           <p className="footer-cheer">We eagerly look forward to welcoming you</p>
-          <h2>Sumeet Nandkumar <i>&</i> Shikha Shaj</h2>
+          <h2 className="footer-title stacked-names">
+            <span className="name-line">Sumeet Nandkumar</span>
+            <span className="amp-line"><i>&</i></span>
+            <span className="name-line">Shikha Shaj</span>
+          </h2>
           <span className="footer-date-info">
             15 & 16 November 2026 · Dombivli & Navi Mumbai
           </span>
